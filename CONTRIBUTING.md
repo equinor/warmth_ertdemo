@@ -1,6 +1,4 @@
-
 # Contributing
-
 
 Contributions are welcome, and they are greatly appreciated! Every
 little bit helps, and credit will always be given.
@@ -9,9 +7,7 @@ You can contribute in many ways:
 
 ## Types of Contributions
 
-
 ### Report Bugs
-
 
 Report bugs at https://github.com/equinor/temperer/issues.
 
@@ -22,7 +18,6 @@ If you are reporting a bug, please include:
 * Detailed steps to reproduce the bug.
 
 ### Fix Bugs
-
 
 Look through the Git issues for bugs. Anything tagged with "bug"
 and "help wanted" is open to whoever wants to implement it.
@@ -56,7 +51,7 @@ Ready to contribute? Here's how to set up ``temperer`` for local development.
 2. Clone your fork locally
 3. Start the development container. [Info](https://containers.dev/)
 4. Create a branch for local development:
-5. Now you can make your changes locally.
+5. Make your changes locally.
 
 6. When you're done making changes, check that your changes pass flake8 and the tests
 ```
@@ -64,8 +59,8 @@ poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --
 poetry run pytest --cov-report=term-missing --cov=temperer tests/ | tee pytest-coverage.txt
 ```
 
-7. Commit your changes  and push your branch to GitHub:
-8. Submit a pull request through the Github website.
+7. Commit your changes and push your branch
+8. Submit a pull request.
 
 
 
@@ -108,21 +103,17 @@ Standard acronyms to start the commit message with are:
     REL: related to releasing xtgeo
 ```
 
-
 ## Type hints
 
-PEP 484
+[PEP 484](https://peps.python.org/pep-0484/)
 
 ## Docstrings
 
-Numpy docstring. 
-
-https://numpydoc.readthedocs.io/en/latest/format.html
+[Numpy](https://numpydoc.readthedocs.io/en/latest/format.html)
 
 ## Style guidelines
 
-
-
+[PEP 8](https://peps.python.org/pep-0008/)
 
 ## Pull Request Guidelines
 
