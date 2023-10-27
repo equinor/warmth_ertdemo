@@ -1,7 +1,0 @@
-salt in base layer 60-50Ma
-
-conductivity 6.5
-rhp 0.012
-phi 0.01
-decay 0
-density 2200
