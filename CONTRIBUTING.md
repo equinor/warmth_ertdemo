@@ -63,9 +63,7 @@ poetry run pytest --cov-report=term-missing --cov=temperer tests/ | tee pytest-c
 8. Submit a pull request.
 
 
-
-Writing commit messages
------------------------
+## Writing commit messages
 
 Commit messages should be clear and follow a few basic rules. Example:
 
