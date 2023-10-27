@@ -1,7 +1,7 @@
 import pandas as pd
 from xtgeo.surface import RegularSurface
-import temperer
-from temperer.data import haq87
+import warmth
+from warmth.data import haq87
 
 #  |  get_dataframe(self, ijcolumns=False, ij=False, order='C', activeonly=True, fill_value=nan)
 #  |      Return a Pandas dataframe object, with columns X_UTME, Y_UTMN, VALUES.
@@ -56,14 +56,14 @@ class SedimentStack:
         return horizons
 
     def create1DNodeAtIJ(self, i_ind, j_ind,):
-        model = temperer.Model()
+        model = warmth.Model()
         node_template = model.builder.single_node_sediments_inputs_template.copy()
         horizons = self.createHorizonsAtIJ(i_ind, j_ind)
         for j,i in enumerate(horizons):
             row = pd.DataFrame({'top': i[0], 'topage': int(i[1]),
                                 'k_cond': i[4], 'rhp': i[5], 'phi': i[6], 'decay': i[7], 'solidus': i[8], 'liquidus': i[9]}, index=[j])
             node_template = pd.concat( [node_template, row] )
-        node = temperer.single_node()
+        node = warmth.single_node()
         node.sediments_inputs = node_template
         #node.bflux = False
         #node.adiab = 0.0

@@ -1,12 +1,12 @@
-# Temperer
+# Warmth
 ## Forward modeling of thermal evolution through geological time
 
-![Build Status](https://github.com/equinor/temperer/actions/workflows/python-test.yml/badge.svg?branch=main)
-![Build Status](https://github.com/equinor/temperer/actions/workflows/docs.yml/badge.svg?branch=main)
+![Build Status](https://github.com/equinor/warmth/actions/workflows/python-test.yml/badge.svg?branch=main)
+![Build Status](https://github.com/equinor/warmth/actions/workflows/docs.yml/badge.svg?branch=main)
 
 [Documentation](https://fuzzy-meme-o4w5534.pages.github.io/)
 
-Temperer is a python package used for modeling thermal evolution based on McKenzie's type basin extension. It can be use for:
+warmth is a python package used for modeling thermal evolution based on McKenzie's type basin extension. It can be use for:
 
 - Finding beta factor
 - Calculating subsidence and thermal history
@@ -26,19 +26,15 @@ Temperer is a python package used for modeling thermal evolution based on McKenz
 Until it is available on pypi, you will need to clone the repo
 
 ```
-git clone git@github.com:equinor/temperer.git
+git clone git@github.com:equinor/warmth.git
 pip install .
 ```
 For a specific release
 ```
-git clone git@github.com:equinor/temperer.git --branch <VERSION>
+git clone git@github.com:equinor/warmth.git --branch <VERSION>
 pip install .
 ```
 
 For full 3D simulation, dolfinx is required.
 
 See https://docs.fenicsproject.org/dolfinx/main/python/installation.html for installation instructions.
-
-## Why the name?
-
-We are very bad at naming things.

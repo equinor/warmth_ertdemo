@@ -9,12 +9,12 @@ You can contribute in many ways:
 
 ### Report Bugs
 
-Report bugs at https://github.com/equinor/temperer/issues.
+Report bugs at https://github.com/equinor/warmth/issues.
 
 If you are reporting a bug, please include:
 
 * Your operating system name and version.
-* temperer version
+* warmth version
 * Detailed steps to reproduce the bug.
 
 ### Fix Bugs
@@ -36,7 +36,7 @@ articles, and such.
 ### Submit Feedback
 
 The best way to send feedback is to file an issue
-at https://github.com/equinor/temperer/issues.
+at https://github.com/equinor/warmth/issues.
 
 If you are proposing a feature:
 
@@ -45,9 +45,9 @@ If you are proposing a feature:
 
 ## Get Started!
 
-Ready to contribute? Here's how to set up ``temperer`` for local development.
+Ready to contribute? Here's how to set up ``warmth`` for local development.
 
-1. Fork the ``temperer`` repo on Github equinor to your personal user
+1. Fork the ``warmth`` repo on Github equinor to your personal user
 2. Clone your fork locally
 3. Start the development container. [Info](https://containers.dev/)
 4. Create a branch for local development:
@@ -56,7 +56,7 @@ Ready to contribute? Here's how to set up ``temperer`` for local development.
 6. When you're done making changes, check that your changes pass flake8 and the tests
 ```
 poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=docs
-poetry run pytest --cov-report=term-missing --cov=temperer tests/ | tee pytest-coverage.txt
+poetry run pytest --cov-report=term-missing --cov=warmth tests/ | tee pytest-coverage.txt
 ```
 
 7. Commit your changes and push your branch

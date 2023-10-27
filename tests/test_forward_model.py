@@ -1,5 +1,5 @@
 import numpy as np
-from temperer.forward_modelling import Forward_model
+from warmth.forward_modelling import Forward_model
 
 def test_pad_multirift_results():
     pad_func = Forward_model._equalise_array_shape
