@@ -1,9 +1,9 @@
 import pandas as pd
-import temperer
-from temperer.data import haq87
+import warmth
+from warmth.data import haq87
 import numpy as np
 import pickle
-from temperer.forward_modelling import Forward_model
+from warmth.forward_modelling import Forward_model
 
 def sediments(template:pd.DataFrame)->pd.DataFrame:
     h1 = [152.0,0.0,1.500000,2.301755e-09,0.620000,0.500,2720.0,2448.0]
@@ -36,9 +36,9 @@ def load_reference_data_multi_rift():
         s = np.load(f)
     return t,d,s
 def test_integration_single_rift():
-    model = temperer.Model()
+    model = warmth.Model()
     sed = sediments(model.builder.single_node_sediments_inputs_template)
-    node = temperer.single_node()
+    node = warmth.single_node()
     node.sediments_inputs = sed
     node.shf = 60e-3
     node.qbase = 30e-3
@@ -59,9 +59,9 @@ def test_integration_single_rift():
 
 
 def test_integration_multi_rift():
-    model = temperer.Model()
+    model = warmth.Model()
     sed = sediments(model.builder.single_node_sediments_inputs_template)
-    node = temperer.single_node()
+    node = warmth.single_node()
     node.sediments_inputs = sed
     node.shf = 60e-3
     node.qbase = 30e-3

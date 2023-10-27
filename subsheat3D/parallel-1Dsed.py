@@ -3,8 +3,8 @@ import pickle
 from multiprocessing import Pool
 import itertools
 
-import temperer
-from temperer.data import haq87
+import warmth
+from warmth.data import haq87
 from subsheat3D.SedimentStack import SedimentStack
 
 from subsheat3D.Helpers import NodeGrid, getNodeParameters
@@ -27,7 +27,7 @@ class NodeWorker(object):
         invalid = np.any(np.isnan(np.array(node.sediments_inputs['top'].to_list())))
         if (invalid):
             return False
-        model = temperer.Model()
+        model = warmth.Model()
         baseage = int(node.sediments["baseage"].iloc[-1])
         model.parameters.time_start = baseage
         model.parameters.time_end = 0
@@ -44,7 +44,7 @@ class NodeWorker(object):
             # compute only the sedimentation for this node, the crustal thickness and subsidence have to be interpolated 
             #   when the 3D simulation is set up! 
             #
-            fw = temperer.forward_modelling.Forward_model(model.parameters, node)
+            fw = warmth.forward_modelling.Forward_model(model.parameters, node)
             fw._sedimentation()
             #
             # pad sed array with bottom (zero-sized?) sediments
