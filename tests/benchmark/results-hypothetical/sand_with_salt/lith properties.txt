@@ -1,0 +1,14 @@
+salt in base layer 60-50Ma
+conductivity 6.5
+rhp 0.012
+phi 0.01
+decay 0
+density 2200
+
+
+Sandstone:
+conductivity 3.95
+rhp 0.703
+phi 0.41
+decay 0.31
+density 2720
