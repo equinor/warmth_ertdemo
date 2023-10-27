@@ -4,12 +4,12 @@ import multiprocessing
 from pathlib import Path
 import sys
 
-import temperer
+import warmth
 
 
 maps_dir = Path("./docs/data/mapA")
 
-model = temperer.Model()
+model = warmth.Model()
 
 inputs = model.builder.input_horizons_template
 
@@ -28,7 +28,7 @@ model.builder.define_geometry(maps_dir/"0.gri",xinc=inc,yinc=inc,fformat="irap_b
 
 model.builder.extract_nodes(4,maps_dir)
 
-from temperer.data import haq87
+from warmth.data import haq87
 model.builder.set_eustatic_sea_level(haq87)
 
 for i in model.builder.iter_node():

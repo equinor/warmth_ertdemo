@@ -12,7 +12,7 @@ import pandas as pd
 import math
 import copy
 from dataclasses import dataclass
-from temperer.utils import compressed_pickle_open, compressed_pickle_save
+from warmth.utils import compressed_pickle_open, compressed_pickle_save
 from .logging import logger
 from .parameters import Parameters
 from .postprocessing import Results
@@ -579,7 +579,7 @@ class Builder:
             )
         else:
             raise ValueError(
-                "Invalid input table. Check temperer.input_data_template")
+                "Invalid input table. Check warmth.input_data_template")
         # Check if age is sorted
         chk = self.input_horizons.apply(lambda x: x.is_monotonic_increasing)
         chk = chk["Age"]
