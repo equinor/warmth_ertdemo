@@ -38,3 +38,7 @@ pip install .
 For full 3D simulation, dolfinx is required.
 
 See https://docs.fenicsproject.org/dolfinx/main/python/installation.html for installation instructions.
+
+## Why the name?
+
+We are very bad at naming things.
