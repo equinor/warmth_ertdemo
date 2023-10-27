@@ -1,3 +1,3 @@
-from temperer.build import Grid
+from warmth.build import Grid
 import numpy as np
 

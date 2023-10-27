@@ -8,7 +8,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-project = 'temperer'
+project = 'warmth'
 copyright = '2023, Equinor ASA'
 author = 'Adam Cheng'
 
@@ -22,7 +22,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_sourcelink_suffix = ''
 nbsphinx_prolog = """
-`Download notebook <https://github.com/equinor/temperer/tree/main/docs/{{ env.doc2path(env.docname, base=None) }}>`_
+`Download notebook <https://github.com/equinor/warmth/tree/main/docs/{{ env.doc2path(env.docname, base=None) }}>`_
 
 ----
 """

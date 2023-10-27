@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "temperer"
+name = "warmth"
 version = "0.0.1"
 description = ""
 authors = ["Adam Cheng <52572642+adamchengtkc@users.noreply.github.com>"]

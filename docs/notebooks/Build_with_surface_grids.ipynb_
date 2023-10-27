@@ -22,7 +22,7 @@
     "\n",
     "sys.path.append(\"../\")\n",
     "import numpy as np\n",
-    "import temperer"
+    "import warmth"
    ]
   },
   {
@@ -68,7 +68,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "model = temperer.Model()"
+    "model = warmth.Model()"
    ]
   },
   {
@@ -140,7 +140,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "from temperer.data import haq87\n",
+    "from warmth.data import haq87\n",
     "model.builder.set_eustatic_sea_level(haq87)"
    ]
   },
