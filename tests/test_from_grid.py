@@ -1,16 +1,12 @@
-
 import os
-import multiprocessing
 from pathlib import Path
-import sys
 import numpy as np
+import warmth
 
-import temperer
 
+maps_dir = Path("../data/notebooks")
 
-maps_dir = Path("../data/mapA")
-
-model = temperer.Model()
+model = warmth.Model()
 
 inputs = model.builder.input_horizons_template
 
@@ -29,7 +25,7 @@ model.builder.define_geometry(maps_dir/"0.gri",xinc=inc,yinc=inc,fformat="irap_b
 
 model.builder.extract_nodes(4,maps_dir)
 
-from temperer.data import haq87
+from warmth.data import haq87
 model.builder.set_eustatic_sea_level(haq87)
 
 for i in model.builder.iter_node():
@@ -100,11 +96,11 @@ for ni in range(len(model.builder.nodes)):
 
             interpolationNodes = [  model.builder.nodes[i[0]][i[1]] for i in itertools.product(closest_x_up+closest_x_down, closest_y_up+closest_y_down)  ]
             interpolationNodes = [nn for nn in interpolationNodes if nn is not False]
-            node = temperer.build.interpolateNode(interpolationNodes)
+            node = warmth.build.interpolateNode(interpolationNodes)
             node.X, node.Y = model.builder.grid.location_grid[ni,nj,:]
             model.builder.nodes[ni][nj] = node
         else:
-            node = temperer.build.interpolateNode([model.builder.nodes[ni][nj]])  # "interpolate" the node from itself to make sure the same member variables exist at the end
+            node = warmth.build.interpolateNode([model.builder.nodes[ni][nj]])  # "interpolate" the node from itself to make sure the same member variables exist at the end
             model.builder.nodes[ni][nj] = node
 
 max_age = model.builder.input_horizons['Age'].to_list()[-1]
@@ -116,7 +112,7 @@ max_age = model.builder.input_horizons['Age'].to_list()[-1]
 for index in model.builder.grid.indexing_arr:
     nn = model.builder.nodes[index[0]][index[1]]
     assert nn is not False
-    assert type(nn)==temperer.build.single_node
+    assert type(nn)==warmth.build.single_node
     assert nn.crust_ls.shape[0] > max_age-1
     if nn.Y>40000:
         nn.sediments['phi'] = np.ones([len(nn.sediments['phi']),1]) * 0.50
@@ -151,7 +147,7 @@ for j in range(-pad, model.builder.grid.num_nodes_y+pad):
         node_j = max(min(j, model.builder.grid.num_nodes_y-1), 0)
         if (node_i != i) or (node_j != j):
             # this is a padded node: create it from the nearest node in the unpadded grid
-            node_new = temperer.build.interpolateNode([model.builder.nodes[node_j][node_i]])
+            node_new = warmth.build.interpolateNode([model.builder.nodes[node_j][node_i]])
             node_new.X = model.builder.grid.origin_x + i * model.builder.grid.step_x 
             node_new.Y = model.builder.grid.origin_y + j * model.builder.grid.step_y
             nodes.append(node_new)

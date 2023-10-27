@@ -2,7 +2,6 @@ import pandas as pd
 import warmth
 from warmth.data import haq87
 import numpy as np
-import pickle
 from warmth.forward_modelling import Forward_model
 
 def sediments(template:pd.DataFrame)->pd.DataFrame:

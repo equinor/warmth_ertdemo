@@ -5,6 +5,7 @@ import itertools
 
 import warmth
 from warmth.data import haq87
+from warmth.forward_modelling import Forward_model
 from subsheat3D.SedimentStack import SedimentStack
 
 from subsheat3D.Helpers import NodeGrid, getNodeParameters
@@ -44,7 +45,7 @@ class NodeWorker(object):
             # compute only the sedimentation for this node, the crustal thickness and subsidence have to be interpolated 
             #   when the 3D simulation is set up! 
             #
-            fw = warmth.forward_modelling.Forward_model(model.parameters, node)
+            fw = Forward_model(model.parameters, node)
             fw._sedimentation()
             #
             # pad sed array with bottom (zero-sized?) sediments
