@@ -11,7 +11,7 @@
 	// "forwardPorts": [],
 
 	// 👇 Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "poetry install --with dev --no-interaction",
+	"postCreateCommand": ["poetry install --with dev --no-interaction","poetry run pip install petsc4py==3.20.0 mpi4py==3.1.5 https://github.com/FEniCS/ufl/archive/refs/tags/2023.2.0.zip https://github.com/FEniCS/ffcx/archive/v0.7.0.zip https://github.com/FEniCS/basix/archive/v0.7.0.zip "],
 
 	// 👇 Configure tool-specific properties.
 	"customizations": {

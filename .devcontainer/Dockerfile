@@ -1,8 +1,8 @@
-FROM mcr.microsoft.com/devcontainers/base:bullseye
+FROM dolfinx/dolfinx:stable
 # FROM mcr.microsoft.com/devcontainers/base:jammy 
-
 ARG DEBIAN_FRONTEND=noninteractive
-ARG USER=vscode
+# RUN useradd -ms /bin/bash vscode
+# ARG USER=vscode
 
 RUN DEBIAN_FRONTEND=noninteractive \
     && apt-get update \ 
@@ -28,7 +28,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
 # Python and poetry installation
 USER $USER
 ARG HOME="/home/$USER"
-ARG PYTHON_VERSION=3.11
+ARG PYTHON_VERSION=3.10
 # ARG PYTHON_VERSION=3.10
 
 ENV PYENV_ROOT="${HOME}/.pyenv"
