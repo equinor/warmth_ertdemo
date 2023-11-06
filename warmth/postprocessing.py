@@ -338,7 +338,7 @@ class Results:
 class Results_interpolator:
     def __init__(self, builder,n_valid_node:int) -> None:
         self._builder = builder
-        self._values = ["kAsth","shf","qbase"]
+        self._values = ["kAsth","crustRHP","qbase","T0"]
         self._values_arr = ["subsidence","crust_ls","lith_ls"]
         self._n_age=None
         self.n_valid_node= n_valid_node+1

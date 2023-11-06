@@ -70,13 +70,13 @@ class single_node:
     
     """
     def __init__(self):
-        self.shf: float = 30e-3
         self.hc: float = 30e3
         self.hLith: float = 130e3
         self.kLith: float = 2
         self.kCrust: float = 2.5
         self.kAsth:float = 100
-        self.rhp: float = 2e-6
+        self.crustRHP: float = 2e-6  #microW
+        self._upperCrust_ratio =0.5
         self.crustliquid: float = 2500.0
         self.crustsolid: float = 2800.0
         self.lithliquid: float = 2700.0
@@ -109,6 +109,10 @@ class single_node:
         self._lith_ls:np.ndarray[np.float64]|None=None
         self._subsidence:np.ndarray[np.float64]|None=None
     
+
+    @property
+    def shf(self)->float:
+        return ((self.crustRHP*self._upperCrust_ratio)*self.hc) + self.qbase
 
     @property
     def result(self)-> Results|None:
@@ -786,7 +790,11 @@ class Builder:
             xinc = hor.xinc
         if isinstance(yinc, type(None)):
             yinc = hor.yinc
-        self.grid = Grid(hor.xori, hor.yori, hor.ncol, hor.nrow, xinc, yinc)
+        xmax = hor.xori+(hor.ncol*hor.xinc)
+        ymax = hor.yori+(hor.nrow*hor.yinc)
+        new_ncol = math.floor((xmax-hor.xori)/xinc)
+        new_nrow = math.floor((ymax-hor.yori)/yinc)
+        self.grid = Grid(hor.xori, hor.yori, new_ncol, new_nrow, xinc, yinc)
         self.nodes = self.grid.make_grid_arr()
         return
 

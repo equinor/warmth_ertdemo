@@ -455,7 +455,9 @@ class UniformNodeGridFixedSizeMeshModel:
         """Construct a new mesh at the given time index tti, and determine the vertex re-indexing induced by dolfinx
         """        
         self.tti = tti
+        print("buildVertices")
         self.buildVertices(time_index=tti, useFakeEncodedZ=True)
+        print("constructMesh")
         self.constructMesh()
         print("updatemesh")
         self.updateMesh(tti)
@@ -569,14 +571,14 @@ class UniformNodeGridFixedSizeMeshModel:
         print("saved mesh")             
         enc = dolfinx.io.XDMFFile.Encoding.HDF5
         with dolfinx.io.XDMFFile(MPI.COMM_SELF, fn, "r", encoding=enc) as file:
-            print("dol")
+
             self.mesh = file.read_mesh(name="Grid" )
             aa=file.read_meshtags(self.mesh, name="Grid")
             self.cell_data_layerID = np.floor(aa.values.copy()*1e-7)-3
             self.node_index = np.mod(aa.values.copy(),1e7).astype(np.int32)
         #
         # obtain original vertex order as encoded in z-pos digits
-        print("done")
+
         zz  = self.mesh.geometry.x[:,2].copy()
         zz2 = np.mod(zz,1000)
         self.mesh_reindex = (1e-4+zz2*100).astype(np.int32)
