@@ -1,6 +1,9 @@
+import time
 from typing import Tuple, TypedDict
+from scipy import interpolate
 import numpy as np
 import pandas as pd
+from .logging import logger
 
 
 class Results:
@@ -331,3 +334,102 @@ class Results:
             return top_sediment_index,base_sediment_index
         else:
             raise Exception(f"Invalid sediment id {sed_id}. Valid ids: {np.unique(sed_id_arr[~np.isnan(sed_id_arr)])}")
+
+class Results_interpolator:
+    def __init__(self, builder,n_valid_node:int) -> None:
+        self._builder = builder
+        self._values = ["kAsth","shf","qbase"]
+        self._values_arr = ["subsidence","crust_ls","lith_ls"]
+        self._n_age=None
+        self.n_valid_node= n_valid_node+1
+        self._x = None
+        self._y=None
+        pass
+    
+    def iter_full_sim_nodes(self):
+        for node in self._builder.iter_node():
+            if node._full_simulation:
+                yield node
+
+    
+    def _get_x_y(self)->None:
+        x = np.zeros(self.n_valid_node)
+        y = np.zeros(self.n_valid_node)
+        for count, node in enumerate(self.iter_full_sim_nodes()):
+            x[count]=node.X
+            y[count]= node.Y
+            if count == 0:
+                self._n_age = node.crust_ls.size
+        self._x = x
+        self._y=y
+        return
+
+    @property
+    def x(self)->np.ndarray[np.float64]:
+        if isinstance(self._x,type(None)):
+            self._get_x_y()
+        return self._x
+    @property
+    def y(self)->np.ndarray[np.float64]:
+        if isinstance(self._y,type(None)):
+            self._get_x_y()
+        return self._y
+    @property
+    def n_age(self)->int:
+        if isinstance(self._n_age,type(None)):
+            self._get_x_y()
+        return self._n_age
+    
+    def interpolator(self,val):
+        grid = self._builder.grid
+        grid_x, grid_y = np.mgrid[
+            grid.origin_x: grid.xmax: grid.step_x,
+            grid.origin_y: grid.ymax: grid.step_y,
+        ]
+        rbfi = interpolate.Rbf(self.x, self.y, val)
+        di = rbfi(grid_x, grid_y)
+        return di
+    
+    def interp_value(self):
+        for prop in self._values:
+            logger.warning(f"Interpolating {prop}")
+            val = np.zeros(self.n_valid_node)
+            for count, node in enumerate(self.iter_full_sim_nodes()):
+                val[count] = getattr(node,prop)
+
+            interped = self.interpolator(val)
+            for n in self._builder.iter_node():
+                if n._full_simulation is False:
+                    idx = n.indexer
+                    val =interped[idx[0],idx[1]]
+                    setattr(n,prop,val)
+        return
+    
+    def interp_arr(self):
+        for prop in self._values_arr:
+            logger.warning(f"Interpolating {prop}")
+            #extract all data from all full simulated nodes
+            val = np.zeros((self.n_valid_node,self.n_age))
+            for count, node in enumerate(self.iter_full_sim_nodes()):
+                val[count,:] = getattr(node,prop)
+            #Handle not simulated nodes
+            prop ="_"+prop
+            for age in range(self.n_age):
+                # filter to age
+                interp_all_this_age = self.interpolator(val[:,age])
+                #set the nodes
+                for node in self._builder.iter_node():
+                    if node._full_simulation is False:
+                        if isinstance(getattr(node,prop),type(None)):
+                            setattr(node,prop,np.zeros(self.n_age))
+                        idx = node.indexer
+                        interpolated_val =interp_all_this_age[idx[0],idx[1]]
+                        arr = getattr(node,prop)
+                        arr[age] =interpolated_val
+                        setattr(node,prop,arr)
+        return
+
+    def run(self):
+        self.interp_value()
+        self.interp_arr()
+        return

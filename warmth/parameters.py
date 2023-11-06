@@ -45,7 +45,7 @@ class Parameters:
         self.maxContLith: float = 130000.0
         self.starting_beta: float = 1.1
         self.positive_down = True
-        self.out_path:Path=Path('./simout')
+
         pass
 
     @property

@@ -1,8 +1,10 @@
-#from numba import jit, prange
+# from numba import jit, prange
 # import gzip
 from pathlib import Path
 import pickle
 import numpy as np
+from scipy import interpolate
+
 from .logging import logger
 # https://gist.github.com/kadereub/9eae9cff356bb62cdbd672931e8e5ec4
 
@@ -126,16 +128,29 @@ from .logging import logger
 
 #     return x1, steps_taken
 
-def compressed_pickle_save(data,path:Path):
+def compressed_pickle_save(data, path: Path):
     with open(path, "wb") as f:
         pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-def compressed_pickle_open(path:Path):
+
+def compressed_pickle_open(path: Path):
     with open(path, "rb") as f:
         data = pickle.load(f)
     return data
-def load_pickle(filepath:Path):
+
+
+def load_pickle(filepath: Path):
     logger.info(f"Loading data from {filepath}")
     with open(filepath, "rb") as f:
         data = pickle.load(f)
     return data
+
+
+def interpolator(x, y, val, grid):
+    grid_x, grid_y = np.mgrid[
+        grid.origin_x: grid.xmax+grid.step_x: grid.step_x,
+        grid.origin_yn: grid.ymax+grid.step_y: grid.step_y,
+    ]
+    rbfi = interpolate.Rbf(x, y, val)
+    di = rbfi(grid_x, grid_y)
+    return di

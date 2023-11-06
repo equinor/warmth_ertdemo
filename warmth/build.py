@@ -105,6 +105,9 @@ class single_node:
         self.temperature_out:np.ndarray[np.float64]|None=None
         self._idsed:np.ndarray[np.int32]|None=None
         self._ht:float = self.hLith+self.hc+150e3
+        self._crust_ls:np.ndarray[np.float64]|None=None
+        self._lith_ls:np.ndarray[np.float64]|None=None
+        self._subsidence:np.ndarray[np.float64]|None=None
     
 
     @property
@@ -121,6 +124,51 @@ class single_node:
             return None
         else:
             return Results(self._depth_out,self.temperature_out,self._idsed,self.sediments,self.kCrust,self.kLith,self.kAsth)
+    @property
+    def crust_ls(self)->np.ndarray[np.float64]:
+        if isinstance(self.result,Results):
+            all_age = self.result.ages
+            val = np.zeros(all_age.size)
+            for age in all_age:
+                val[age] = self.result.crust_thickness(age)
+    
+            return val
+        else:
+            return self._crust_ls
+    @property
+    def lith_ls(self)->np.ndarray[np.float64]:
+        if isinstance(self.result,Results):
+            all_age = self.result.ages
+            val = np.zeros(all_age.size)
+            for age in all_age:
+                val[age] = self.result.lithosphere_thickness(age)
+            return val
+        else:
+            return self._lith_ls          
+    @property
+    def subsidence(self)->np.ndarray[np.float64]:
+        if isinstance(self.result,Results):
+            all_age = self.result.ages
+            val = np.zeros(all_age.size)
+            for age in all_age:
+                val[age] = self.result.seabed(age)
+            return val
+        else:
+            return self._subsidence 
+    @property
+    def sed_thickness_ls(self)->float:
+        if isinstance(self.result,Results):
+            all_age = self.result.ages
+            val = np.zeros(all_age.size)
+            for age in all_age:
+                seabed = self.result.seabed(age)
+                top_crust = self.result.top_crust(age)
+                val[age] = top_crust - seabed
+            return val
+        else:
+            return self.sed[-1,1,:] - self.sed[0,0,:]
+        
+    
     @property
     def _name(self) -> str:
         return str(self.X).replace(".", "_")+"__"+str(self.Y).replace(".", "_")
@@ -255,7 +303,12 @@ class Grid:
         self.__location_xtgeo = None
         self.__location_xtgeo_z = None
         self._indexing_arr = None
-
+    @property
+    def xmax(self)->float:
+        return self.origin_x+ (self.num_nodes_x*self.step_x)    
+    @property
+    def ymax(self)->float:
+        return self.origin_y+ (self.num_nodes_y*self.step_y)
     @property
     def location_grid(self)->np.ndarray:
         """Locations of all 1D nodes
@@ -346,33 +399,7 @@ class Grid:
             pickle.dump(self, f, protocol=pickle.HIGHEST_PROTOCOL)
         return
 
-def interpolateNode(interpolationNodes: List[single_node], interpolationWeights=None) -> single_node:
-    assert len(interpolationNodes)>0
-    if interpolationWeights is None:
-        interpolationWeights = np.ones([len(interpolationNodes),1])
-    assert len(interpolationNodes)==len(interpolationWeights)
-    wsum = np.sum(np.array(interpolationWeights))
-    iWeightNorm = [ w/wsum for w in interpolationWeights]
 
-    node = single_node()
-    node.__dict__.update(interpolationNodes[0].__dict__)
-    node.X = np.sum( np.array( [node.X * w for node,w in zip(interpolationNodes,iWeightNorm)] ) ) 
-    node.Y = np.sum( np.array( [node.Y * w for node,w in zip(interpolationNodes,iWeightNorm)] ) )
-
-    times = range(node.result._depth.shape[1])
-    node.subsidence = np.sum( np.array( [ [node.result.seabed(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
-    node.crust_ls = np.sum( np.array( [ [node.result.crust_thickness(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
-    node.lith_ls = np.sum( np.array( [ [node.result.lithosphere_thickness(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
-
-    node.beta = np.sum( np.array( [node.beta * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
-    node.kAsth = np.sum( np.array( [node.kAsth * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
-    node.kLith = np.sum( np.array( [node.kLith * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
-    node.depth_out = np.sum([node.result._depth*w for n,w in zip(interpolationNodes[0:1], [1] )], axis=0)
-    node.temperature_out = np.sum([n.result._temperature*w for n,w in zip(interpolationNodes[0:1], [1] )], axis=0)
-
-    node.sed = np.sum([n.sed*w for n,w in zip(interpolationNodes,iWeightNorm)], axis=0)
-    node.sed_thickness_ls =  node.sed[-1,1,:] - node.sed[0,0,:]    
-    return node
 
 class Builder:
     def __init__(self, parameters: Parameters):
@@ -390,7 +417,7 @@ class Builder:
         self._ymax = 0
         self.boundary = None
         self.grid: Grid | None = None
-        self.nodes: list = []
+        self.nodes: list[single_node] = []
 
     @property
     def single_node_sediments_inputs_template(self):
@@ -467,7 +494,6 @@ class Builder:
         location = self.grid._location_xtgeo_z
         loc_depth_val = top.get_fence(location)
         loc_depth_val = loc_depth_val.filled(np.nan)
-
         if (
             isinstance(input_data_row["Facies_maps"], str)
             and (input_data_row["Facies_maps"]) != "faci_m//-1.pmd"
@@ -752,13 +778,15 @@ class Builder:
             Map format supported by xtgeo, by default "irap_binary"
         """
         hor = xtgeo.surface_from_file(path, values=False, fformat=fformat)
+        hor.unrotate()
+        hor.autocrop()
+        if hor.yflip != 1:
+            raise Exception("Flipped surface not supported")
         if isinstance(xinc, type(None)):
             xinc = hor.xinc
         if isinstance(yinc, type(None)):
             yinc = hor.yinc
-        nx = math.ceil((hor.xmax+xinc-hor.xmin)/xinc)
-        ny = math.ceil((hor.ymax+yinc-hor.ymin)/yinc)
-        self.grid = Grid(hor.xmin, hor.ymin, nx, ny, xinc, yinc)
+        self.grid = Grid(hor.xori, hor.yori, hor.ncol, hor.nrow, xinc, yinc)
         self.nodes = self.grid.make_grid_arr()
         return
 
@@ -785,7 +813,12 @@ class Builder:
             for col in row:
                 if isinstance(col,bool)==False:
                     yield col
-
+    @property
+    def indexer_full_sim(self)->list:
+        return [i.indexer for i in self.iter_node() if i._full_simulation is True]
+    @property
+    def n_valid_node(self)->int:
+        return len([i for i in self.iter_node()])
     def set_eustatic_sea_level(self, sealevel:dict|None=None):
         """Set eustatic sea level correction for subsidence modelling
 
