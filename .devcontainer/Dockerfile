@@ -1,4 +1,4 @@
-FROM dolfinx/dolfinx:stable
+FROM dolfinx/dolfinx:v0.7.0
 # FROM mcr.microsoft.com/devcontainers/base:jammy 
 ARG DEBIAN_FRONTEND=noninteractive
 # RUN useradd -ms /bin/bash vscode
@@ -28,9 +28,11 @@ RUN DEBIAN_FRONTEND=noninteractive \
 # Python and poetry installation
 USER $USER
 ARG HOME="/home/$USER"
-ARG PYTHON_VERSION=3.10
-# ARG PYTHON_VERSION=3.10
 
+# Don't change. Dolfinx in the base image is only compiled with 3.10
+ARG PYTHON_VERSION=3.10
+
+# Use poetry pyenv
 ENV PYENV_ROOT="${HOME}/.pyenv"
 ENV PATH="${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${HOME}/.local/bin:$PATH"
 
