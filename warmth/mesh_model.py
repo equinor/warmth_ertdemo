@@ -9,7 +9,7 @@ from scipy.interpolate import LinearNDInterpolator
 from warmth.build import single_node
 from .model import Model
 from warmth.logging import logger
-from .mesh_utils import  NodeParameters1D, top_crust,top_sed,thick_crust,  top_lith, top_asth, top_sed_id, bottom_sed_id,NodeGrid
+from .mesh_utils import  top_crust,top_sed,thick_crust,  top_lith, top_asth, top_sed_id, bottom_sed_id,NodeGrid
 from .resqpy_helpers import write_tetra_grid_with_properties, write_hexa_grid_with_properties,read_mesh_resqml_hexa
 def tic():
     #Homemade version of matlab tic and toc functions
@@ -79,11 +79,8 @@ class UniformNodeGridFixedSizeMeshModel:
         self.mean_porosity = None
         self.c_rho = None
         self.numberOfSediments = model.builder.input_horizons.shape[0]-1 #skip basement
-        # self.globalSediments = self.node1D[0].sediments.copy()
 
-        self.parameters1D = self.node1D[0].parameters if hasattr(self.node1D[0], 'parameters') else NodeParameters1D()
         self.interpolators = {}
-        print("Using 1D Node parameters", self.parameters1D)
    
     def write_tetra_mesh_resqml( self, out_path):
         """Prepares arrays and calls the RESQML output helper function:  the lith and aesth are removed, and the remaining
@@ -315,17 +312,17 @@ class UniformNodeGridFixedSizeMeshModel:
         #
         # prefactor 1000 is the heat capacity.. assumed constant
         #
+        node = self.node1D[node_index]
         if (ss==-1):
-            return 1000*self.parameters1D.crustsolid
+            return 1000*node.crustsolid
         if (ss==-2):
-            return 1000*self.parameters1D.lithsolid
+            return 1000*node.lithsolid
         if (ss==-3):
-            return 1000*self.parameters1D.crustsolid
+            return 1000*node.crustsolid
         if (ss>=0) and (ss<self.numberOfSediments):
-            node = self.node1D[node_index]
             rho = node.sediments.solidus[ss]
             return 1000*rho
-        return 1000*self.parameters1D.crustsolid
+        return 1000*node.crustsolid
 
     def kForLayerID(self, ss, node_index):
         """Thermal conductivity for a layer ID index
@@ -339,19 +336,19 @@ class UniformNodeGridFixedSizeMeshModel:
         #     print(len(self.cell_data_layerID), np.amin(self.cell_data_layerID), np.amax(self.cell_data_layerID))
         #     print("kForLayerID", ss, ind0, ind1, ind2, self.cell_data_layerID[self.cell_index[cell_id]] )
         # assert self.cell_data_layerID[ind2] == ss
+        if (node_index > len(self.node1D)-1):
+            print("cell ID", node_index, len(self.node1D))
+            breakpoint()
+        node = self.node1D[node_index]
         if (ss==-1):
-            return self.parameters1D.kCrust
+            return node.kCrust
         elif  (ss==-2):
-            return self.parameters1D.kLith
+            return node.kLith
         elif (ss==-3):
-            return self.parameters1D.kAsth
+            return node.kAsth
         elif (ss>=0) and (ss<self.numberOfSediments):
             # kc = self.globalSediments.k_cond[ss]
             # node_index = cell_id // (self.numberOfSediments+6)  # +6 because crust, lith, aest are each cut into two
-            if (node_index > len(self.node1D)-1):
-                print("cell ID", node_index, len(self.node1D))
-                breakpoint()
-            node = self.node1D[node_index]
             kc = node.sediments.k_cond[ss]
             return kc
 
@@ -360,7 +357,9 @@ class UniformNodeGridFixedSizeMeshModel:
         """Radiogenic heat production for a layer ID index
         """
         if (ss==-1):
-            return 0
+            node = self.node1D[node_index]
+            kc = node.crustRHP
+            return kc
         elif (ss==-2):
             return 0
         elif (ss==-3):

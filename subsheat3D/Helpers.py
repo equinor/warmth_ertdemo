@@ -25,6 +25,7 @@ class NodeParameters1D:
     kCrust: float = 2.5
     kAsth: float = 100
     rhp: float = 2
+    crustRHP: float = 2
     crustliquid: float = 2500.0
     crustsolid: float = 2800.0
     lithliquid: float = 2700.0
