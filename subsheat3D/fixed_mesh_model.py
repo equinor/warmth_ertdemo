@@ -1,7 +1,9 @@
 import numpy as np
 from mpi4py import MPI
 from scipy.interpolate import LinearNDInterpolator
+from typing import Iterator, List, Literal
 
+from warmth.build import single_node
 from warmth.logging import logger
 from subsheat3D.Helpers import  NodeParameters1D, top_crust,top_sed,thick_crust,  top_lith, top_asth, top_sed_id, bottom_sed_id
 from subsheat3D.resqpy_helpers import write_tetra_grid_with_properties, write_hexa_grid_with_properties
@@ -14,6 +16,46 @@ from subsheat3D.resqpy_helpers import write_tetra_grid_with_properties, write_he
 #      follows an exp-decay
 #      NOTE: the default values of surface and base heat flow imply zero RHP in the crust
 #
+
+
+def interpolateNode(interpolationNodes: List[single_node], interpolationWeights=None) -> single_node:
+    assert len(interpolationNodes)>0
+    if interpolationWeights is None:
+        interpolationWeights = np.ones([len(interpolationNodes),1])
+    assert len(interpolationNodes)==len(interpolationWeights)
+    wsum = np.sum(np.array(interpolationWeights))
+    iWeightNorm = [ w/wsum for w in interpolationWeights]
+
+    node = single_node()
+    node.__dict__.update(interpolationNodes[0].__dict__)
+    node.X = np.sum( np.array( [node.X * w for node,w in zip(interpolationNodes,iWeightNorm)] ) ) 
+    node.Y = np.sum( np.array( [node.Y * w for node,w in zip(interpolationNodes,iWeightNorm)] ) )
+
+    times = range(node.result._depth.shape[1])
+    if node.subsidence is None:
+        node.subsidence = np.sum( np.array( [ [node.result.seabed(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    if node.crust_ls is None:
+        node.crust_ls = np.sum( np.array( [ [node.result.crust_thickness(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    if node.lith_ls is None:
+        node.lith_ls = np.sum( np.array( [ [node.result.lithosphere_thickness(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+
+    if node.beta is None:
+        node.beta = np.sum( np.array( [node.beta * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    if node.kAsth is None:
+        node.kAsth = np.sum( np.array( [node.kAsth * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    if node.kLith is None:
+        node.kLith = np.sum( np.array( [node.kLith * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    if node._depth_out is None:
+        node._depth_out = np.sum([node.result._depth_out*w for n,w in zip(interpolationNodes[0:1], [1] )], axis=0)
+    if node.temperature_out is None:
+        node.temperature_out = np.sum([n.result.temperature_out*w for n,w in zip(interpolationNodes[0:1], [1] )], axis=0)
+
+    if node.sed is None:
+        node.sed = np.sum([n.sed*w for n,w in zip(interpolationNodes,iWeightNorm)], axis=0)
+    if node.sed_thickness_ls is None:
+        node.sed_thickness_ls =  node.sed[-1,1,:] - node.sed[0,0,:]    
+    return node
+
 
 #
 class UniformNodeGridFixedSizeMeshModel:

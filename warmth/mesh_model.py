@@ -10,7 +10,7 @@ from warmth.build import single_node
 from .model import Model
 from warmth.logging import logger
 from .mesh_utils import  NodeParameters1D, top_crust,top_sed,thick_crust,  top_lith, top_asth, top_sed_id, bottom_sed_id,NodeGrid
-from .resqpy_helpers import write_tetra_grid_with_properties, write_hexa_grid_with_properties,read_mesh_resqml
+from .resqpy_helpers import write_tetra_grid_with_properties, write_hexa_grid_with_properties,read_mesh_resqml_hexa
 def tic():
     #Homemade version of matlab tic and toc functions
     import time
@@ -1374,4 +1374,4 @@ def run( model:Model, run_simulation=True, start_time=182, end_time=0, out_dir =
     print("total time solve: " , time_solve)
     EPCfilename = mm2.write_hexa_mesh_resqml("temp/")
     print("RESQML model written to: " , EPCfilename)
-    read_mesh_resqml(EPCfilename)  # test reading of the .epc file
+    read_mesh_resqml_hexa(EPCfilename)  # test reading of the .epc file
