@@ -923,7 +923,7 @@ class UniformNodeGridFixedSizeMeshModel:
 
         # source = self.globalSediments.rhp[self.numberOfSediments-1]  * 1e-6   # conversion from uW/m^3
         # f = dolfinx.fem.Constant(self.mesh, PETSc.ScalarType(source))  # source term 
-        f = self.rhpFcn * 1e-6   # conversion from uW/m^3
+        f = self.rhpFcn # * 1e-6   # conversion from uW/m^3
         print("mean RHP", np.mean(self.rhpFcn.x.array[:]))
 
         if ( self.useBaseFlux ):
@@ -967,9 +967,9 @@ class UniformNodeGridFixedSizeMeshModel:
             print("Neumann conditions: ", self.tti, np.count_nonzero(domain_c.x.array), np.count_nonzero(domain_zero.x.array))
 
             g = (-1.0*baseFlux) * ufl.conditional( domain_c > 0, 1.0, 0.0 )
-            L = (self.c_rho*self.u_n + dt*f)*v*ufl.dx - dt * g * v * ufl.ds    # last term reflects Neumann BC 
+            L = (self.c_rho*self.u_n + 1e-6*dt*f)*v*ufl.dx - dt * g * v * ufl.ds    # last term reflects Neumann BC 
         else:
-            L = (self.c_rho*self.u_n + dt*f)*v*ufl.dx   # no Neumann BC 
+            L = (self.c_rho*self.u_n + 1e-6*dt*f)*v*ufl.dx   # no Neumann BC 
 
         bilinear_form = dolfinx.fem.form(a)
         linear_form = dolfinx.fem.form(L)
