@@ -4,6 +4,14 @@
 name: Tests
 
 on:
+  workflow_call:
+    inputs:
+      event_type:
+        required: true
+        type: string
+      action_type:
+        required: true
+        type: string
   workflow_dispatch:
   push:
     branches: [main, dev]
@@ -57,7 +65,8 @@ jobs:
       filter3d: ${{ steps.filter3d.outputs.mesh3d }}
 
   test3d:
-    uses: equinor/warmth/.github/workflows/python-test-3d.yml.yml@main
+    needs: [build]
+    uses: equinor/warmth/.github/workflows/python-test-3d.yml@main
     if: ${{ needs.build.outputs.filter3d }} == 'true'
     with:
       event_type: ${{ github.event_name}}
