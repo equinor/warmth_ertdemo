@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from warmth.build import single_node
+
 @dataclass
 class NodeGrid:
     origin_x: float
@@ -25,7 +27,6 @@ class NodeParameters1D:
     kCrust: float = 2.5
     kAsth: float = 100
     rhp: float = 2
-    crustRHP: float = 2
     crustliquid: float = 2500.0
     crustsolid: float = 2800.0
     lithliquid: float = 2700.0
@@ -65,7 +66,7 @@ def top_crust(nn, tti):
     if (tti > nn.subsidence.shape[0]-1):    
         return 0.0
     return nn.subsidence[tti] + nn.sed_thickness_ls[tti]
-def top_sed(nn, tti):
+def top_sed(nn:single_node, tti):
     if (tti > nn.subsidence.shape[0]-1):    
         return 0.0
     return nn.subsidence[tti]

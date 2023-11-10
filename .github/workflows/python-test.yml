@@ -2,47 +2,72 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
 name: Tests
- 
+
 on:
+  workflow_call:
+    inputs:
+      event_type:
+        required: true
+        type: string
+      action_type:
+        required: true
+        type: string
   workflow_dispatch:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main , dev ]
+    branches: [main, dev]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10','3.11']
+        python-version: ["3.10", "3.11"]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        curl -sSL https://install.python-poetry.org | python3
-        poetry install --with dev --no-interaction
+      - name: Install dependencies
+        run: |
+          curl -sSL https://install.python-poetry.org | python3
+          poetry install --with dev --no-interaction
 
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=docs
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=docs
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=docs
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=docs
 
-    - name: Test with pytest
-      run: |
-        poetry run pytest --cov-report=term-missing --cov=warmth tests/ | tee pytest-coverage.txt
+      - name: Test with pytest
+        run: |
+          poetry run pytest --cov-report=term-missing --ignore=tests/3d --cov=warmth tests/ | tee pytest-coverage.txt
 
-    - name: Comment coverage
-      if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
-      uses: coroo/pytest-coverage-commentator@v1.0.2
-      with:
-        pytest-coverage: pytest-coverage.txt
+      - name: Comment coverage
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
+        uses: coroo/pytest-coverage-commentator@v1.0.2
+        with:
+          pytest-coverage: pytest-coverage.txt
+
+      - name: check_3d_modified
+        uses: dorny/paths-filter@v2
+        id: filter3d
+        with:
+          filters: |
+            mesh3d:
+              - 'warmth/3d/**'
+    outputs:
+      filter3d: ${{ steps.filter3d.outputs.mesh3d }}
+
+  test3d:
+    needs: [build]
+    uses: equinor/warmth/.github/workflows/python-test-3d.yml@main
+    if: ${{ needs.build.outputs.filter3d }} == 'true'
+    with:
+      event_type: ${{ github.event_name}}
+      action_type: ${{ github.event.action}}

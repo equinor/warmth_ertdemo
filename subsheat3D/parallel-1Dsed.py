@@ -5,7 +5,6 @@ import itertools
 
 import warmth
 from warmth.data import haq87
-from warmth.forward_modelling import Forward_model
 from subsheat3D.SedimentStack import SedimentStack
 
 from subsheat3D.Helpers import NodeGrid, getNodeParameters
@@ -39,13 +38,13 @@ class NodeWorker(object):
             i.rift = np.array([[baseage, int(node.sediments["baseage"].iloc[-2])]])
         model.parameters.experimental = True
         if (full_beta_solve):
-            model.simulator.run_all()
+            model.simulator.run()
         else:
             #
             # compute only the sedimentation for this node, the crustal thickness and subsidence have to be interpolated 
             #   when the 3D simulation is set up! 
             #
-            fw = Forward_model(model.parameters, node)
+            fw = warmth.forward_modelling.Forward_model(model.parameters, node)
             fw._sedimentation()
             #
             # pad sed array with bottom (zero-sized?) sediments
@@ -97,13 +96,13 @@ if __name__ == '__main__':
                     print("Process finished: ", result)            
 
     gridFiles = []
-    gridFiles.append(("data/mapA/0.gri",0))
-    gridFiles.append(("data/mapA/66.gri",66))
-    gridFiles.append(("data/mapA/100.gri",100))
-    gridFiles.append(("data/mapA/163.gri",163))
-    gridFiles.append(("data/mapA/168.gri",168))
-    gridFiles.append(("data/mapA/170.gri",170))
-    gridFiles.append(("data/mapA/182.gri",182))
+    gridFiles.append(("docs/notebooks/data/0.gri",0))
+    gridFiles.append(("docs/notebooks/data/66.gri",66))
+    gridFiles.append(("docs/notebooks/data/100.gri",100))
+    gridFiles.append(("docs/notebooks/data/163.gri",163))
+    gridFiles.append(("docs/notebooks/data/168.gri",168))
+    gridFiles.append(("docs/notebooks/data/170.gri",170))
+    gridFiles.append(("docs/notebooks/data/182.gri",182))
     sedstack = SedimentStack()
     sedstack.loadFromGridFiles(gridFiles)
     sedstack.nodeDirectoryPrefix = "nodes-mapA/"

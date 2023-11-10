@@ -1,0 +1,64 @@
+# This workflows will upload a Python Package using Twine when a release is created
+# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+
+name: build
+ 
+on:
+  workflow_dispatch:
+    
+jobs:
+  test3d:
+    uses: equinor/warmth/.github/workflows/python-test-3d.yml@main
+    with:
+      event_type: ${{ github.event_name}}
+      action_type: ${{ github.event.action}}
+  test1d:
+    uses: equinor/warmth/.github/workflows/python-test.yml@main
+    with:
+      event_type: ${{ github.event_name}}
+      action_type: ${{ github.event.action}}
+  snyk:
+    uses: equinor/warmth/.github/workflows/snyk.yml@main
+  docs:
+    uses: equinor/warmth/.github/workflows/docs.yml@main
+
+  deploy:
+    needs: [test3d, test1d, snyk, docs]
+    environment: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+            ref: 'master'
+            fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+            python-version: '3.11'
+
+      - name: Azure key vault login
+        uses: Azure/login@v1
+        with:
+            client-id: ${{ secrets.AZURE_CLIENT_ID }}
+            tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+            subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Fetch secrets
+        uses: azure/CLI@v1
+        with:
+            azcliversion: 2.42.0
+            inlineScript: |
+                echo PYPI_TOKEN=$(az keyvault secret show --vault-name PSSCloudDev --name PYPI-Token --query value -o tsv) >> $GITHUB_ENV
+        
+      - name: Install dependencies
+        run: |
+            curl -sSL https://install.python-poetry.org | python3
+            poetry install --with dev --no-interaction
+            
+      - name: Build and publish
+        run: |
+            poetry config pypi-token.pypi ${{ env.PYPI_TOKEN }}
+            poetry build
+            poetry publish

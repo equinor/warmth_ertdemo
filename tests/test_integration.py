@@ -2,6 +2,7 @@ import pandas as pd
 import warmth
 from warmth.data import haq87
 import numpy as np
+import pickle
 from warmth.forward_modelling import Forward_model
 
 def sediments(template:pd.DataFrame)->pd.DataFrame:
@@ -39,8 +40,8 @@ def test_integration_single_rift():
     sed = sediments(model.builder.single_node_sediments_inputs_template)
     node = warmth.single_node()
     node.sediments_inputs = sed
-    node.shf = 60e-3
     node.qbase = 30e-3
+    node.crustRHP = (60e-3-node.qbase)/node.hc/0.5
     node.rift = np.array([[160,145]])
     model.parameters.time_start = 160
     model.parameters.time_end = 0
@@ -62,8 +63,8 @@ def test_integration_multi_rift():
     sed = sediments(model.builder.single_node_sediments_inputs_template)
     node = warmth.single_node()
     node.sediments_inputs = sed
-    node.shf = 60e-3
     node.qbase = 30e-3
+    node.crustRHP = (60e-3-node.qbase)/node.hc/0.5
     node.rift = np.array([[160,145],[100,80]])
     node.paleoWD=np.array([200])
     model.parameters.time_start = 160

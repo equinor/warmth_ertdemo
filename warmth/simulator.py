@@ -5,6 +5,7 @@ from pathlib import Path
 
 import time
 import numpy as np
+from warmth.postprocessing import Results_interpolator
 from warmth.utils import load_pickle
 from .logging import logger
 from .forward_modelling import Forward_model
@@ -23,6 +24,7 @@ class _nodeWorker:
         self.node_path:Path = args[1]
         self.node=load_node(self.node_path)
         self.parameters = load_pickle(self.parameter_path)
+        self.out_path=args[2]
         pass
 
     def _pad_sediments(self):
@@ -37,7 +39,7 @@ class _nodeWorker:
 
     def _save_results(self) -> Path:
         filename = self.node._name+"_results"
-        filepath = self.parameters.out_path / NODES_DIR/filename
+        filepath = self.out_path / NODES_DIR/filename
         self.node._dump(filepath)
         return filepath
 
@@ -55,10 +57,8 @@ class _nodeWorker:
             # Delete input node
             self.node_path.unlink(missing_ok=True)
         except Exception as e:
-            import sys
-            self.node.error = repr(e.with_traceback(sys.exception().__traceback__))
+            self.node.error = e
             filepath = self._save_results()
-            print(self.node.error)
             logger.error(self.node.error)
         return filepath
 
@@ -67,7 +67,6 @@ def runWorker(args):
     worker = _nodeWorker(args)
     result_path = worker.run()
     return result_path
-
 
 class Simulator:
     """Solving model
@@ -88,18 +87,20 @@ class Simulator:
                                                None)
         self.process = 2
         self.cpu=self.process
+        self.simulate_every = 1
+        self.out_path:Path=Path('./simout')
         pass
 
     @property
     def _nodes_path(self):
-        return self._builder.parameters.out_path / NODES_DIR
+        return self.out_path / NODES_DIR
 
     @property
     def _parameters_path(self):
-        return self._builder.parameters.out_path / PARAMETER_FILE
+        return self.out_path / PARAMETER_FILE
     @property
     def _grid_path(self):
-        return self._builder.parameters.out_path / GRID_FILE
+        return self.out_path / GRID_FILE
 
 
 
@@ -120,17 +121,17 @@ class Simulator:
             futures = [th.submit(self.dump_input_nodes,  i)
                        for i in self._builder.iter_node() if i is not False]
             for future in concurrent.futures.as_completed(futures):
-                p.append([parameter_data_path, future.result()])
+                p.append([parameter_data_path, future.result(),self.out_path])
         return p
 
     def setup_directory(self, purge=False):
-        if self._builder.parameters.out_path.exists():
+        if self.out_path.exists():
             if purge:
                 from shutil import rmtree
-                rmtree(self._builder.parameters.out_path)
+                rmtree(self.out_path)
             else:
                 raise Exception(
-                    f'Output directory {self._builder.parameters.out_path} already exist. Use purge=True to delete existing data')
+                    f'Output directory {self.out_path} already exist. Use purge=True to delete existing data')
         self._nodes_path.mkdir(parents=True, exist_ok=True)
         return
 
@@ -138,12 +139,46 @@ class Simulator:
         if parallel:
             self._parellel_run(save,purge)
         else:
+            if self.simulate_every != 1:
+                logger.warning("Serial simulation will run full simulation on all nodes")
             for i in self._builder.iter_node():
                 self.forward_modelling.current_node=i
                 self.forward_modelling.simulate_single_node()
         return
 
+    def _filter_full_sim(self)->int:
+        count=0
+        minimum_node_per_axis=5
+        if self.simulate_every < 1:
+            raise Exception("Invalid input")
+        short_axis_count = self._builder.grid.num_nodes_x if self._builder.grid.num_nodes_x <self._builder.grid.num_nodes_y else self._builder.grid.num_nodes_y
+        if short_axis_count/self.simulate_every <minimum_node_per_axis:
+            self.simulate_every = short_axis_count/minimum_node_per_axis
+            logger.warning(f"Simulating every {self.simulate_every} node to make sure each axis has minimum {minimum_node_per_axis} nodes")
+        if self.simulate_every ==1:
+            pass
+        else:
+            for index in self._builder.grid.indexing_arr:
+                #for rows
+                if (index[0] % self.simulate_every > 0):
+                    pass
+                else:
+                    if isinstance(self._builder.nodes[index[0]][index[1]],bool) is False:
+                        self._builder.nodes[index[0]][index[1]]._full_simulation = False
+                        count+=1
+                #for cols
+                if (index[1] % self.simulate_every > 0):
+                    pass
+                else:
+                    if isinstance(self._builder.nodes[index[0]][index[1]],bool) is False:
+                        self._builder.nodes[index[0]][index[1]]._full_simulation = False
+                        count+=1
+
+        if count >0:
+            logger.info(f"Setting {count} nodes to partial simulation")
+        return count
     def _parellel_run(self, save,purge):
+        filtered = self._filter_full_sim()
         self.setup_directory(purge)
         p = self.dump_input_data()
         #self._builder.nodes=self._builder.grid.make_grid_arr()
@@ -171,7 +206,11 @@ class Simulator:
                 logger.warning(f"No result file for node X:{n.X}, Y:{n.Y}")
         if save==False:
             from shutil import rmtree
-            rmtree(self._builder.parameters.out_path)
+            rmtree(self.out_path)
+        if filtered >0:
+            logger.info(f"Interpolating results back to {filtered} partial simulated nodes")
+            interp_res= Results_interpolator(self._builder,len(p)-filtered)
+            interp_res.run()
         return
     def put_node_to_grid(self,node:single_node):
         self._builder.nodes[node.indexer[0]][node.indexer[1]]=node

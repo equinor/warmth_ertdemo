@@ -63,3 +63,7 @@ exec12/
 exec13/
 
 docs/_build
+
+*.c
+*.o
+*.so

@@ -89,7 +89,7 @@ Standard acronyms to start the commit message with are:
 ```
     API: an (incompatible) API change (will be rare)
     PERF: performance or bench-marking
-    BLD: change related to building xtgeo
+    BLD: change related to building
     BUG: bug fix
     FIX: fixes wrt to technical issues, e.g. wrong requirements.txt
     DEP: deprecate something, or remove a deprecated object
@@ -98,7 +98,7 @@ Standard acronyms to start the commit message with are:
     CLN: code cleanup, maintenance commit (refactoring, typos, PEP, etc.)
     REV: revert an earlier commit
     TST: addition or modification of tests
-    REL: related to releasing xtgeo
+    REL: related to release
 ```
 
 ## Type hints

@@ -194,7 +194,7 @@ def run( nodeGrid, run_simulation=True, start_time=182, end_time=0, out_dir = "o
 #
 # NOTE: to compute the required 1D node solutions, you must first run  subsheat3D/parallel-1Dsed.py using the same NodeGrid parameters as below!
 #
-
+ng = NodeGrid(150, 0, 485, 548, 500, 1000, 5, 1000, 1000)
 ng = NodeGrid(0, 0, 11, 11, 500, 1000, 5, 100, 100)
 # ng = NodeGrid(25400, 41600, 31, 31, 100, 100, 2, 100, 100)
 
