@@ -16,14 +16,19 @@
 	// 👇 Configure tool-specific properties.
 	"customizations": {
         "vscode": {
-            "extensions":["ms-python.python", "njpwerner.autodocstring","ms-python.autopep8"]
+            "extensions":[
+				"ms-python.python",
+				"njpwerner.autodocstring",
+				"ms-python.autopep8",
+				"ms-toolsai.jupyter",
+				"ms-python.vscode-pylance",
+				"ms-azuretools.vscode-docker"
+			]
             }
 		},
 		"features": {
-			"ghcr.io/devcontainers/features/git-lfs:1": {
-				"autoPull": true,
-				"version": "latest"
-			}
+			"ghcr.io/devcontainers/features/git-lfs:1": {},
+			"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 		}
 
 	// 👇 Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
