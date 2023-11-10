@@ -403,6 +403,33 @@ class Grid:
             pickle.dump(self, f, protocol=pickle.HIGHEST_PROTOCOL)
         return
 
+def interpolateNode(interpolationNodes: List[single_node], interpolationWeights=None) -> single_node:
+    assert len(interpolationNodes)>0
+    if interpolationWeights is None:
+        interpolationWeights = np.ones([len(interpolationNodes),1])
+    assert len(interpolationNodes)==len(interpolationWeights)
+    wsum = np.sum(np.array(interpolationWeights))
+    iWeightNorm = [ w/wsum for w in interpolationWeights]
+
+    node = single_node()
+    node.__dict__.update(interpolationNodes[0].__dict__)
+    node.X = np.sum( np.array( [node.X * w for node,w in zip(interpolationNodes,iWeightNorm)] ) ) 
+    node.Y = np.sum( np.array( [node.Y * w for node,w in zip(interpolationNodes,iWeightNorm)] ) )
+
+    times = range(node.result._depth.shape[1])
+    node.subsidence = np.sum( np.array( [ [node.result.seabed(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    node.crust_ls = np.sum( np.array( [ [node.result.crust_thickness(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    node.lith_ls = np.sum( np.array( [ [node.result.lithosphere_thickness(t) for t in times] * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+
+    node.beta = np.sum( np.array( [node.beta * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    node.kAsth = np.sum( np.array( [node.kAsth * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    node.kLith = np.sum( np.array( [node.kLith * w for node,w in zip(interpolationNodes,iWeightNorm)] ) , axis = 0) 
+    node.depth_out = np.sum([node.result._depth*w for n,w in zip(interpolationNodes[0:1], [1] )], axis=0)
+    node.temperature_out = np.sum([n.result._temperature*w for n,w in zip(interpolationNodes[0:1], [1] )], axis=0)
+
+    node.sed = np.sum([n.sed*w for n,w in zip(interpolationNodes,iWeightNorm)], axis=0)
+    node.sed_thickness_ls =  node.sed[-1,1,:] - node.sed[0,0,:]    
+    return node
 
 
 class Builder:

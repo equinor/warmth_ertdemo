@@ -1,1 +1,1 @@
-*.gri filter=lfs diff=lfs merge=lfs -text
+*.gri *.png filter=lfs diff=lfs merge=lfs -text
