@@ -25,9 +25,8 @@ jobs:
       with:
         image: dolfinx/dolfinx:v0.7.0
         name: dolfinx
-        options: -v ${{ github.workspace }}:/warmth
+        options: -v ${{ github.workspace }}:/
         args: |
-          cd /warmth
           pip install .
           pip install pytest==7.4.2 pytest-cov==4.1.0
           pytest --cov-report=term-missing --cov=warmth/3d tests/3d | tee pytest-coverage.txt
