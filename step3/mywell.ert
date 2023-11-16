@@ -1,0 +1,16 @@
+NUM_REALIZATIONS 30
+
+QUEUE_SYSTEM LSF
+
+RUNPATH mywell_out/realization-<IENS>/iter-<ITER>
+
+FORWARD_MODEL COPY_FILE(<FROM>=<CONFIG_PATH>/mymodel.txt, <TO>=<RUNPATH>/mymodel.txt)
+
+GEN_KW PARAMS params.tmpl params.json params_priors
+
+GEN_DATA MYWELL_TEMP RESULT_FILE:mywell_temp.out
+
+OBS_CONFIG observations
+
+INSTALL_JOB mywell_eval MYWELL_EVAL
+FORWARD_MODEL mywell_eval

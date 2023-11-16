@@ -1,0 +1,5 @@
+GENERAL_OBSERVATION MYWELL_TEMP {
+   DATA       = MYWELL_TEMP;
+   INDEX_LIST = 20,25,36;
+   OBS_FILE   = mywell_temp_data.txt;
+};
