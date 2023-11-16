@@ -1,0 +1,6 @@
+NUM_REALIZATIONS 5
+
+RUNPATH mywell_out/realization-<IENS>/iter-<ITER>
+
+INSTALL_JOB mywell_eval MYWELL_EVAL
+FORWARD_MODEL mywell_eval
