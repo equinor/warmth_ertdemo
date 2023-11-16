@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pathlib import Path
 from .parameters import Parameters
 from .utils import load_pickle
